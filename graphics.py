@@ -9,9 +9,14 @@ running = True
 pygame.font.init() 
 my_font = pygame.font.SysFont('Arial Bold Italic', 30)
 
-#initialize chessboard
+#initialize chessboard data structure
 chess = chessboard.Chessboard()
 print(chess)
+
+#initialize chessboard graphic
+board_img = pygame.image.load("Assets/chessboard.png").convert()
+x_offset = 320
+y_offset = 0
 
 while running:
     # poll for events
@@ -24,8 +29,7 @@ while running:
     screen.fill("white")
 
     # RENDER YOUR GAME HERE
-    text_surface = my_font.render(str(chess), False, (0, 0, 0))
-    screen.blit(text_surface, (0,0))
+    screen.blit(board_img, (x_offset, y_offset))
 
     # flip() the display to put your work on screen
     pygame.display.flip()
