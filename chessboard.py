@@ -19,6 +19,9 @@ class Piece:
         self.team = team
         self.x = x
         self.y = y
+
+    def __str__(self):
+        return self.piecetype.name + " " + self.team.name + " " + str(self.x) + " " + str(self.y)
     
     #all x_move functions check if a move is valid.
     def pawn_move(self, new_x, new_y):
@@ -95,12 +98,73 @@ class Piece:
             return True
         else:
             return False
-            
 
+#tile holds a piece and a flag indicating whether there is a piece on it or not        
+class Tile:
+    def __init__(self, piece):
+        if(piece == None):
+            self.empty = True
+        else:
+            self.empty = False
+        
+        self.piece = piece
+
+    def __repr__(self):
+
+        if(self.empty):
+            return "Empty"
+        
+        return str(self.piece)
+
+    def setPiece(self, piece):
+        self.piece = piece
+        self.empty = False
 
 class Chessboard:
-    pieces = [ [0]*8 for i in range(8)]
+    tiles = [[Tile(None) for i in range(8)] for j in range(8)]
 
-    def print(self):
-        return str(self.pieces)
+    #creates pieces and assigns correct tiles for the board
+    def __init__(self) -> None:
+        for x in range(8):
+            for y in range(8):
+                #pawn initializing
+                if(y == 1):
+                    self.tiles[y][x].setPiece(Piece(PieceType.PAWN, Team.MAX, x, y))
+                if(y == 6):
+                    self.tiles[y][x].setPiece(Piece(PieceType.PAWN, Team.MIN, x, y))
+
+                #rook initializing
+                if(y == 0 and (x == 0 or x == 7)):
+                    self.tiles[y][x].setPiece(Piece(PieceType.ROOK, Team.MAX, x, y))
+                if(y == 7 and (x == 0 or x == 7)):
+                    self.tiles[y][x].setPiece(Piece(PieceType.ROOK, Team.MIN, x, y))
+
+                #knight initializing
+                if(y == 0 and (x == 1 or x == 6)):
+                    self.tiles[y][x].setPiece(Piece(PieceType.KNIGHT, Team.MAX, x, y))
+                if(y == 7 and (x == 1 or x == 6)):
+                    self.tiles[y][x].setPiece(Piece(PieceType.KNIGHT, Team.MIN, x, y))
+
+                #bishop initializing
+                if(y == 0 and (x == 2 or x == 5)):
+                    self.tiles[y][x].setPiece(Piece(PieceType.BISHOP, Team.MAX, x, y))
+                if(y == 7 and (x == 2 or x == 5)):
+                    self.tiles[y][x].setPiece(Piece(PieceType.BISHOP, Team.MIN, x, y))
+
+                #queen initializing
+                if(y == 0 and x == 3):
+                    self.tiles[y][x].setPiece(Piece(PieceType.QUEEN, Team.MAX, x, y))
+                if(y == 7 and x == 3):
+                    self.tiles[y][x].setPiece(Piece(PieceType.QUEEN, Team.MIN, x, y))
+
+                #king initializing
+                if(y == 0 and x == 4):
+                    self.tiles[y][x].setPiece(Piece(PieceType.KING, Team.MAX, x, y))
+                if(y == 7 and x == 4):
+                    self.tiles[y][x].setPiece(Piece(PieceType.KING, Team.MIN, x, y))
+                
+                
+
+    def __str__(self):
+        return str(self.tiles)
 
