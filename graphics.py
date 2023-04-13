@@ -14,8 +14,7 @@ chess = chessboard.Chessboard()
 print(chess)
 
 #initialize chessboard graphic
-board_img = pygame.image.load("Assets/chessboard.png").convert()
-pawn_img = pygame.image.load("Assets/blackpawn.png").convert()
+board_img = pygame.image.load("Assets/chessboard.png").convert_alpha()
 x_offset = 320
 y_offset = 0
 
@@ -31,7 +30,6 @@ while running:
 
     # RENDER YOUR GAME HERE
     screen.blit(board_img, (x_offset, y_offset))
-    screen.blit(pawn_img, (x_offset, y_offset))
 
     # flip() the display to put your work on screen
     pygame.display.flip()
