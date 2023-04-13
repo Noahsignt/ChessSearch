@@ -1,4 +1,6 @@
 from enum import Enum
+import pygame
+import math
 
 class PieceType(Enum):
     PAWN = 1
@@ -19,9 +21,20 @@ class Piece:
         self.team = team
         self.x = x
         self.y = y
+        self.img = pygame.image.load(self.path()).convert_alpha()
 
     def __str__(self):
         return self.piecetype.name + " " + self.team.name + " " + str(self.x) + " " + str(self.y)
+    
+    #constructs image path based on team and type
+    def path(self):
+        if self.team.name == 'MIN':
+            team = 'black'
+        else:
+            team = 'white'
+        
+        return 'Assets/' + team + self.piecetype.name.lower() + '.png'
+        
     
     #all x_move functions check if a move is valid.
     def pawn_move(self, new_x, new_y):
@@ -161,9 +174,17 @@ class Chessboard:
                 if(y == 0 and x == 4):
                     self.tiles[y][x].setPiece(Piece(PieceType.KING, Team.MAX, x, y))
                 if(y == 7 and x == 4):
-                    self.tiles[y][x].setPiece(Piece(PieceType.KING, Team.MIN, x, y))
-                
-                
+                    self.tiles[y][x].setPiece(Piece(PieceType.KING, Team.MIN, x, y))        
+    
+    #uses x coords 
+    def find_piece(self, x, y, x_offset, y_offset):
+        relative_x = x - x_offset
+        relative_y = y - y_offset
+        
+        x = math.floor(relative_x / 80)
+        y = math.floor(relative_y / 80)
+
+        return self.tiles[y][x].piece
 
     def __str__(self):
         return str(self.tiles)
