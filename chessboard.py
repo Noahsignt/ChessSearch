@@ -130,8 +130,12 @@ class Tile:
         return str(self.piece)
 
     def setPiece(self, piece):
-        self.piece = piece
-        self.empty = False
+        if(piece == None):
+            self.piece = None
+            self.empty = True
+        else:
+            self.piece = piece
+            self.empty = False
 
 class Chessboard:
     tiles = [[Tile(None) for i in range(8)] for j in range(8)]
@@ -174,7 +178,28 @@ class Chessboard:
                 if(y == 0 and x == 4):
                     self.tiles[y][x].setPiece(Piece(PieceType.KING, Team.MAX, x, y))
                 if(y == 7 and x == 4):
-                    self.tiles[y][x].setPiece(Piece(PieceType.KING, Team.MIN, x, y))        
+                    self.tiles[y][x].setPiece(Piece(PieceType.KING, Team.MIN, x, y))       
+
+    #high-level idea is that this draws the vector between the old and new positions. It moves along each point of the vector, checking
+    #if a piece exists there.
+    def check_no_collide(self, old_x, old_y, new_x, new_y):
+        collided = False
+
+        while old_x != new_x or old_y != new_y:
+            if(old_x < new_x):
+                old_x += 1
+            elif(old_x > new_x):
+                old_x -= 1
+            if(old_y < new_y):
+                old_y += 1
+            elif(old_y > new_y):
+                old_y -= 1
+
+            if(not(self.tiles[old_y][old_x].empty)):
+                collided = True
+                break
+        
+        return not(collided)
     
     #uses x coords 
     def find_piece(self, x, y, x_offset, y_offset):
@@ -185,6 +210,22 @@ class Chessboard:
         y = math.floor(relative_y / 80)
 
         return self.tiles[y][x].piece
+    
+    def move_piece(self, piece, x, y, x_offset, y_offset):
+        old_x = piece.x
+        old_y = piece.y
+
+        x = math.floor((x - x_offset) / 80)
+        y = math.floor((y - y_offset) / 80)
+
+        #piece on tile
+        if(not(self.tiles[y][x].empty) and piece.team == self.tiles[y][x].piece.team):
+            return
+
+        #check if move is allowed
+        if(self.check_no_collide(old_x, old_y, x, y) and piece.move(x, y)): 
+            self.tiles[old_y][old_x].setPiece(None)
+            self.tiles[y][x].setPiece(piece)
 
     def __str__(self):
         return str(self.tiles)

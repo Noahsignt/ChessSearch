@@ -25,7 +25,11 @@ while running:
             running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
-                print(chessboard.find_piece(event.pos[0], event.pos[1], 320, 0))
+                active_piece = chessboard.find_piece(event.pos[0], event.pos[1], 320, 0)
+        if event.type == pygame.MOUSEBUTTONUP:
+            if event.button == 1:
+                #try and move active piece
+                chessboard.move_piece(active_piece, event.pos[0], event.pos[1], 320, 0)
 
     # fill the screen with a color to wipe away anything from last frame
     screen.fill("white")
