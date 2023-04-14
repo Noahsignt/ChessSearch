@@ -16,7 +16,8 @@ class Team(Enum):
     MIN = 1
 
 class Piece: 
-    def __init__(self, piecetype, team, x, y) -> None:
+    def __init__(self, piecetype, team, x, y, chessboard) -> None:
+        self.chessboard = chessboard
         self.piecetype = piecetype
         self.team = team
         self.x = x
@@ -43,14 +44,30 @@ class Piece:
             first_move = True
         else:
             first_move = False
-
-        #check no deviation in x
-        if (abs(self.x - new_x) > 0):
-            return False
-        #check correct y movement
+       
+        #check correct y magnitude
         if (abs(self.y - new_y) > 1 and not(first_move)):
             return False
         if (abs(self.y - new_y) > 2):
+            return False
+        #check correct y direction
+        if((self.team == Team.MIN and new_y - self.y > 0) or (self.team == Team.MAX and new_y - self.y < 0)):
+            return False 
+        #check no deviation in x
+        if (abs(self.x - new_x) > 0):
+            #check if we can capture a piece
+            if(abs(self.x - new_x) == 1 and abs(self.y - new_y) == 1):
+                piece = self.chessboard.tiles[new_y][new_x].piece
+
+                if(piece == None):
+                    return False
+                elif(piece.team != self.team):
+                    return True
+                
+            return False
+        #check didn't land on a piece
+        piece = self.chessboard.tiles[new_y][new_x].piece
+        if(piece != None):
             return False
 
         return True
@@ -146,39 +163,39 @@ class Chessboard:
             for y in range(8):
                 #pawn initializing
                 if(y == 1):
-                    self.tiles[y][x].setPiece(Piece(PieceType.PAWN, Team.MAX, x, y))
+                    self.tiles[y][x].setPiece(Piece(PieceType.PAWN, Team.MAX, x, y, self))
                 if(y == 6):
-                    self.tiles[y][x].setPiece(Piece(PieceType.PAWN, Team.MIN, x, y))
+                    self.tiles[y][x].setPiece(Piece(PieceType.PAWN, Team.MIN, x, y, self))
 
                 #rook initializing
                 if(y == 0 and (x == 0 or x == 7)):
-                    self.tiles[y][x].setPiece(Piece(PieceType.ROOK, Team.MAX, x, y))
+                    self.tiles[y][x].setPiece(Piece(PieceType.ROOK, Team.MAX, x, y, self))
                 if(y == 7 and (x == 0 or x == 7)):
-                    self.tiles[y][x].setPiece(Piece(PieceType.ROOK, Team.MIN, x, y))
+                    self.tiles[y][x].setPiece(Piece(PieceType.ROOK, Team.MIN, x, y, self))
 
                 #knight initializing
                 if(y == 0 and (x == 1 or x == 6)):
-                    self.tiles[y][x].setPiece(Piece(PieceType.KNIGHT, Team.MAX, x, y))
+                    self.tiles[y][x].setPiece(Piece(PieceType.KNIGHT, Team.MAX, x, y, self))
                 if(y == 7 and (x == 1 or x == 6)):
-                    self.tiles[y][x].setPiece(Piece(PieceType.KNIGHT, Team.MIN, x, y))
+                    self.tiles[y][x].setPiece(Piece(PieceType.KNIGHT, Team.MIN, x, y, self))
 
                 #bishop initializing
                 if(y == 0 and (x == 2 or x == 5)):
-                    self.tiles[y][x].setPiece(Piece(PieceType.BISHOP, Team.MAX, x, y))
+                    self.tiles[y][x].setPiece(Piece(PieceType.BISHOP, Team.MAX, x, y, self))
                 if(y == 7 and (x == 2 or x == 5)):
-                    self.tiles[y][x].setPiece(Piece(PieceType.BISHOP, Team.MIN, x, y))
+                    self.tiles[y][x].setPiece(Piece(PieceType.BISHOP, Team.MIN, x, y, self))
 
                 #queen initializing
                 if(y == 0 and x == 3):
-                    self.tiles[y][x].setPiece(Piece(PieceType.QUEEN, Team.MAX, x, y))
+                    self.tiles[y][x].setPiece(Piece(PieceType.QUEEN, Team.MAX, x, y, self))
                 if(y == 7 and x == 3):
-                    self.tiles[y][x].setPiece(Piece(PieceType.QUEEN, Team.MIN, x, y))
+                    self.tiles[y][x].setPiece(Piece(PieceType.QUEEN, Team.MIN, x, y, self))
 
                 #king initializing
                 if(y == 0 and x == 4):
-                    self.tiles[y][x].setPiece(Piece(PieceType.KING, Team.MAX, x, y))
+                    self.tiles[y][x].setPiece(Piece(PieceType.KING, Team.MAX, x, y, self))
                 if(y == 7 and x == 4):
-                    self.tiles[y][x].setPiece(Piece(PieceType.KING, Team.MIN, x, y))       
+                    self.tiles[y][x].setPiece(Piece(PieceType.KING, Team.MIN, x, y, self))       
 
     #high-level idea is that this draws the vector between the old and new positions. It moves along each point of the vector, checking
     #if a piece exists there.
@@ -194,6 +211,9 @@ class Chessboard:
                 old_y += 1
             elif(old_y > new_y):
                 old_y -= 1
+
+            if(old_x == new_x and old_y == new_y):
+                break
 
             if(not(self.tiles[old_y][old_x].empty)):
                 collided = True
@@ -224,6 +244,9 @@ class Chessboard:
 
         #check if move is allowed
         if(self.check_no_collide(old_x, old_y, x, y) and piece.move(x, y)): 
+            self.tiles[old_y][old_x].setPiece(None)
+            self.tiles[y][x].setPiece(piece)
+        elif(piece.piecetype == PieceType.KNIGHT and piece.move(x, y)):
             self.tiles[old_y][old_x].setPiece(None)
             self.tiles[y][x].setPiece(piece)
 
