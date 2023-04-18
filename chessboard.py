@@ -225,8 +225,8 @@ class Chessboard:
 
         return self.tiles[y][x].piece
     
-    #checks all requirements to see if move is legal
-    def legal_move(self, piece, x, y):
+    #checks all requirements to see if move is legal for a non-king piece
+    def nk_legal_move(self, piece, x, y):
         #same team tile
         if(not(self.tiles[y][x].empty) and piece.team == self.tiles[y][x].piece.team):
             return False
@@ -239,14 +239,35 @@ class Chessboard:
     
     #finds all legal moves - very slow bc we iterate through all tiles. Will make faster by only checking possible vectors
     def find_legal_moves(self, piece):
-        valid = []
-
+        #hashmap to O(1) check if king in check
+        valid = {}
         for x in range(8):
             for y in range(8):
-                if(self.legal_move(piece, x, y)):
-                    valid.append((x, y))
+                if(self.nk_legal_move(piece, x, y)):
+                    valid[(x, y)] = True
+                else:
+                    valid[(x, y)] = False
 
         return valid
+    
+    #exact same as other legal move but also checks if king in check
+    def k_legal_move(self, piece, x, y):
+        if(not(self.tiles[y][x].empty) and piece.team == self.tiles[y][x].piece.team):
+            return False
+        
+        old_x = piece.x
+        old_y = piece.y
+        safe = True
+
+        for i in range(8):
+            for j in range(8):
+                if(not(self.tiles[j][i].empty) and self.tiles[j][i].piece.team != piece.team):
+                    legal_moves = self.find_legal_moves(self.tiles[j][i].piece)
+                    if(legal_moves[(x, y)]):
+                        print(self.tiles[j][i].piece.piecetype.name + " " + self.tiles[j][i].piece.team.name + " " + str(i) + str(j))
+                        safe = False
+
+        return self.check_no_collide(old_x, old_y, x, y) and piece.move(x, y) and safe
     
     def move_piece(self, piece, x, y, x_offset, y_offset):
         x = math.floor((x - x_offset) / 80)
@@ -255,7 +276,7 @@ class Chessboard:
         old_x = piece.x
         old_y = piece.y
 
-        if(self.legal_move( piece, x, y)):
+        if(piece.piecetype != PieceType.KING and self.nk_legal_move(piece, x, y) or (piece.piecetype == PieceType.KING and self.k_legal_move(piece, x, y))):
             piece.x = x
             piece.y = y
             self.tiles[old_y][old_x].setPiece(None)
