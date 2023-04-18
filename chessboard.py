@@ -76,9 +76,6 @@ class Piece:
         change_y = abs(self.y - new_y)
         is_valid = (change_x == 1 and change_y == 2) or (change_x == 2 and change_y == 1)
 
-        if(is_valid):
-            self.x = new_x
-            self.y = new_y
         return is_valid
     
     def bishop_move(self, new_x, new_y):
@@ -122,8 +119,6 @@ class Piece:
                 is_valid = self.king_move(new_x, new_y)
         
         if(is_valid):
-            self.x = new_x
-            self.y = new_y
             return True
         else:
             return False
@@ -242,6 +237,17 @@ class Chessboard:
         #return true if knight lands in valid tile or other piece can trace clear vector to tile
         return (piece.piecetype == PieceType.KNIGHT or self.check_no_collide(old_x, old_y, x, y)) and piece.move(x, y)
     
+    #finds all legal moves - very slow bc we iterate through all tiles. Will make faster by only checking possible vectors
+    def find_legal_moves(self, piece):
+        valid = []
+
+        for x in range(8):
+            for y in range(8):
+                if(self.legal_move(piece, x, y)):
+                    valid.append((x, y))
+
+        return valid
+    
     def move_piece(self, piece, x, y, x_offset, y_offset):
         x = math.floor((x - x_offset) / 80)
         y = math.floor((y - y_offset) / 80)
@@ -250,6 +256,8 @@ class Chessboard:
         old_y = piece.y
 
         if(self.legal_move( piece, x, y)):
+            piece.x = x
+            piece.y = y
             self.tiles[old_y][old_x].setPiece(None)
             self.tiles[y][x].setPiece(piece)
 
