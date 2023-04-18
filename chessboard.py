@@ -36,7 +36,6 @@ class Piece:
         
         return 'Assets/' + team + self.piecetype.name.lower() + '.png'
         
-    
     #all x_move functions check if a move is valid.
     def pawn_move(self, new_x, new_y):
         #check if pawn is on first move
@@ -231,24 +230,30 @@ class Chessboard:
 
         return self.tiles[y][x].piece
     
-    def move_piece(self, piece, x, y, x_offset, y_offset):
+    #checks all requirements to see if move is legal
+    def legal_move(self, piece, x, y):
+        #same team tile
+        if(not(self.tiles[y][x].empty) and piece.team == self.tiles[y][x].piece.team):
+            return False
+        
         old_x = piece.x
         old_y = piece.y
-
+        
+        #return true if knight lands in valid tile or other piece can trace clear vector to tile
+        return (piece.piecetype == PieceType.KNIGHT or self.check_no_collide(old_x, old_y, x, y)) and piece.move(x, y)
+    
+    def move_piece(self, piece, x, y, x_offset, y_offset):
         x = math.floor((x - x_offset) / 80)
         y = math.floor((y - y_offset) / 80)
 
-        #piece on tile
-        if(not(self.tiles[y][x].empty) and piece.team == self.tiles[y][x].piece.team):
-            return
+        old_x = piece.x
+        old_y = piece.y
 
-        #check if move is allowed
-        if(self.check_no_collide(old_x, old_y, x, y) and piece.move(x, y)): 
+        if(self.legal_move( piece, x, y)):
             self.tiles[old_y][old_x].setPiece(None)
             self.tiles[y][x].setPiece(piece)
-        elif(piece.piecetype == PieceType.KNIGHT and piece.move(x, y)):
-            self.tiles[old_y][old_x].setPiece(None)
-            self.tiles[y][x].setPiece(piece)
+
+    
 
     def __str__(self):
         return str(self.tiles)
