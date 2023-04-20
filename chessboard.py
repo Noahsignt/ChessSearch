@@ -149,6 +149,7 @@ class Tile:
             self.empty = False
 
 class Chessboard:
+    white_turn = True
     tiles = [[Tile(None) for i in range(8)] for j in range(8)]
 
     #creates pieces and assigns correct tiles for the board
@@ -279,6 +280,12 @@ class Chessboard:
         return safe
     
     def move_piece(self, piece, x, y, x_offset, y_offset):
+
+        correct_turn = (self.white_turn and piece.team == Team.MAX) or (not(self.white_turn) and piece.team == Team.MIN)
+
+        if(not(correct_turn)):
+            return
+        
         x = math.floor((x - x_offset) / 80)
         y = math.floor((y - y_offset) / 80)
 
@@ -290,6 +297,7 @@ class Chessboard:
             piece.y = y
             self.tiles[old_y][old_x].setPiece(None)
             self.tiles[y][x].setPiece(piece)
+            self.white_turn = not(self.white_turn)
 
     
 
