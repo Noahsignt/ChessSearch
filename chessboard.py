@@ -189,7 +189,7 @@ class Chessboard:
                 if(y == 0 and x == 4):
                     self.tiles[y][x].setPiece(Piece(PieceType.KING, Team.MAX, x, y, self))
                 if(y == 7 and x == 4):
-                    self.tiles[y][x].setPiece(Piece(PieceType.KING, Team.MIN, x, y, self))       
+                    self.tiles[y][x].setPiece(Piece(PieceType.KING, Team.MIN, x, y, self))   
 
     #high-level idea is that this draws the vector between the old and new positions. It moves along each point of the vector, checking
     #if a piece exists there.
@@ -259,6 +259,12 @@ class Chessboard:
         old_y = piece.y
         safe = True
 
+        if(not(self.check_no_collide(old_x, old_y, x, y) and piece.move(x, y))):
+            return False
+        
+        self.tiles[old_y][old_x].setPiece(None)
+        self.tiles[y][x].setPiece(piece)
+
         for i in range(8):
             for j in range(8):
                 if(not(self.tiles[j][i].empty) and self.tiles[j][i].piece.team != piece.team):
@@ -267,7 +273,10 @@ class Chessboard:
                         print(self.tiles[j][i].piece.piecetype.name + " " + self.tiles[j][i].piece.team.name + " " + str(i) + str(j))
                         safe = False
 
-        return self.check_no_collide(old_x, old_y, x, y) and piece.move(x, y) and safe
+        self.tiles[old_y][old_x].setPiece(piece)
+        self.tiles[y][x].setPiece(None)
+
+        return safe
     
     def move_piece(self, piece, x, y, x_offset, y_offset):
         x = math.floor((x - x_offset) / 80)
