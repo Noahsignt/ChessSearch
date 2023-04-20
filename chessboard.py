@@ -234,9 +234,9 @@ class Chessboard:
         
         old_x = piece.x
         old_y = piece.y
-        
-        #return true if knight lands in valid tile or other piece can trace clear vector to tile
-        return (piece.piecetype == PieceType.KNIGHT or self.check_no_collide(old_x, old_y, x, y)) and piece.move(x, y)
+
+        valid = (piece.piecetype == PieceType.KNIGHT or self.check_no_collide(old_x, old_y, x, y)) and piece.move(x, y)
+        return valid
     
     #finds all legal moves - very slow bc we iterate through all tiles. Will make faster by only checking possible vectors
     def find_legal_moves(self, piece):
@@ -253,7 +253,7 @@ class Chessboard:
     
     #exact same as other legal move but also checks if king in check
     def k_legal_move(self, piece, x, y):
-        if(not(self.tiles[y][x].empty) and piece.team == self.tiles[y][x].piece.team):
+        if(not(self.tiles[y][x].empty) and piece.team == self.tiles[y][x].piece.team and self.tiles[y][x].piece != piece):
             return False
         
         old_x = piece.x
@@ -274,13 +274,12 @@ class Chessboard:
                         print(self.tiles[j][i].piece.piecetype.name + " " + self.tiles[j][i].piece.team.name + " " + str(i) + str(j))
                         safe = False
 
-        self.tiles[old_y][old_x].setPiece(piece)
         self.tiles[y][x].setPiece(None)
+        self.tiles[old_y][old_x].setPiece(piece)
 
         return safe
     
     def move_piece(self, piece, x, y, x_offset, y_offset):
-
         correct_turn = (self.white_turn and piece.team == Team.MAX) or (not(self.white_turn) and piece.team == Team.MIN)
 
         if(not(correct_turn)):
@@ -293,10 +292,37 @@ class Chessboard:
         old_y = piece.y
 
         if(piece.piecetype != PieceType.KING and self.nk_legal_move(piece, x, y) or (piece.piecetype == PieceType.KING and self.k_legal_move(piece, x, y))):
+            safe = True
+
+            if(piece.piecetype != PieceType.KING):
+                self.tiles[old_y][old_x].setPiece(None)
+                self.tiles[y][x].setPiece(piece)
+
+                #check king is safe
+                for i in range(8):
+                    for j in range(8):
+                        if(not(self.tiles[j][i].empty)):
+                            current = self.tiles[j][i].piece
+                            if current.team == piece.team and current.piecetype == PieceType.KING:
+                                king = current
+
+                for i in range(8):
+                    for j in range(8):
+                        if(not(self.tiles[j][i].empty) and self.tiles[j][i].piece.team != piece.team):
+                            legal_moves = self.find_legal_moves(self.tiles[j][i].piece)
+                            if(legal_moves[(king.x, king.y)]):
+                                print(self.tiles[j][i].piece.piecetype.name + " " + self.tiles[j][i].piece.team.name + " " + str(i) + str(j))
+                                safe = False
+
+            if not(safe):
+                self.tiles[old_y][old_x].setPiece(piece)
+                self.tiles[y][x].setPiece(None)
+
+                return
+            
             piece.x = x
             piece.y = y
-            self.tiles[old_y][old_x].setPiece(None)
-            self.tiles[y][x].setPiece(piece)
+            print("Turn over moved" + str(piece.piecetype) + str(piece.team))
             self.white_turn = not(self.white_turn)
 
     
