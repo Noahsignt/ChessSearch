@@ -263,6 +263,11 @@ class Chessboard:
         if(not(self.check_no_collide(old_x, old_y, x, y) and piece.move(x, y))):
             return False
         
+        if(self.tiles[y][x].empty):
+            old = None
+        else:
+            old = self.tiles[y][x].piece
+        
         self.tiles[old_y][old_x].setPiece(None)
         self.tiles[y][x].setPiece(piece)
 
@@ -274,7 +279,7 @@ class Chessboard:
                         print(self.tiles[j][i].piece.piecetype.name + " " + self.tiles[j][i].piece.team.name + " " + str(i) + str(j))
                         safe = False
 
-        self.tiles[y][x].setPiece(None)
+        self.tiles[y][x].setPiece(old)
         self.tiles[old_y][old_x].setPiece(piece)
 
         return safe
